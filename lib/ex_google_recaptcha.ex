@@ -22,7 +22,7 @@ defmodule ExGoogleRecaptcha do
       "event" => %{
         "token" => token,
         "siteKey" => site_key,
-        "expectedAction" => "login"
+        "expectedAction" => "submit"
       }
     }
 
