@@ -7,7 +7,7 @@ defmodule ExGoogleRecaptcha do
 
   def site_key, do: Application.fetch_env!(:ex_google_recaptcha, :site_key)
 
-  def verify(nil), do: :error
+  def verify(nil), do: {:error, :missing_token}
 
   def verify(token) when is_bitstring(token) do
     project_id = Application.fetch_env!(:ex_google_recaptcha, :project_id)

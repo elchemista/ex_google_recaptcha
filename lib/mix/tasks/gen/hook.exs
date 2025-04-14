@@ -1,4 +1,4 @@
-defmodule Mix.Tasks.GenRecaptchaHook do
+defmodule Mix.Tasks.Gen.Hook do
   use Mix.Task
 
   @shortdoc "Generates the ex_google_recaptcha.js hook file"
