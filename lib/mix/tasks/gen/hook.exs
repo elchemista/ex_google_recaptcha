@@ -8,31 +8,61 @@ defmodule Mix.Tasks.Gen.Hook do
 
     file_content = """
     const RecaptchaHook = {
-      mounted() {
-        this.el.addEventListener("submit", (event) => {
-          // Prevent immediate submission
-          event.preventDefault();
+        mounted() {
+            grecaptcha.enterprise.ready(() => {
+                // Get the site key from the data attribute
+                let siteKey = this.el.dataset.siteKey;
 
-          // Wait for reCAPTCHA Enterprise to be ready
-          grecaptcha.enterprise.ready(() => {
-            // Get the site key from the data attribute
-            let siteKey = this.el.dataset.siteKey;
+                grecaptcha.enterprise.execute(siteKey, { action: "submit" })
+                    .then((token) => {
+                        let input = document.createElement("input");
+                        input.type = "hidden";
+                        input.name = "g-recaptcha-response";
+                        input.value = token;
+                        this.el.appendChild(input);
+                    });
+            });
 
-            grecaptcha.enterprise.execute(siteKey, { action: "submit" })
-              .then((token) => {
-                // Create a hidden input to hold the reCAPTCHA token
-                let input = document.createElement("input");
-                input.type = "hidden";
-                input.name = "g-recaptcha-response";
-                input.value = token;
+            this.el.addEventListener("submit", (event) => {
+                // Prevent immediate submission
+                event.preventDefault();
 
-                // Append the token to the form and submit
-                this.el.appendChild(input);
-                this.el.submit();
-              });
-          });
-        });
-      },
+                // Wait for reCAPTCHA Enterprise to be ready
+                grecaptcha.enterprise.ready(() => {
+                    // Get the site key from the data attribute
+                    let siteKey = this.el.dataset.siteKey;
+
+                    grecaptcha.enterprise.execute(siteKey, { action: "submit" })
+                        .then((token) => {
+                            let input = this.el.querySelector(
+                                "input[name='g-recaptcha-response']",
+                            );
+                            if (!input) {
+                                // Create a hidden input to hold the reCAPTCHA token
+                                input = document.createElement("input");
+                                input.type = "hidden";
+                                input.name = "g-recaptcha-response";
+                                input.value = token;
+                                this.el.appendChild(input);
+
+                                this.fireEvent(
+                                    event.originalEvent.eventType,
+                                    event.originalEvent,
+                                );
+
+                                return;
+                            }
+
+                            input.value = token;
+
+                            this.fireEvent(
+                                event.originalEvent.eventType,
+                                event.originalEvent,
+                            );
+                        });
+                });
+            });
+        },
     };
 
     export default RecaptchaHook;
